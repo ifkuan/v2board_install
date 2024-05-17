@@ -1,4 +1,11 @@
-# V2board一键部署
+# V2board改版一键部署
+
+这个分支版本增加了很多功能：在线设备数量限制，支持vless的reality/h2等。
+
+项目地址：https://github.com/wyx2685/v2board
+
+配套后端：https://github.com/wyx2685/XrayR
+
 
 **脚本适用于操作系统：CentOS7.X/RedHat7.X部署，内存1G内存，磁盘容量大于5G,部署环境最好使用单独的服务器，避免环境冲突。**
 
