@@ -1,17 +1,16 @@
 #!/bin/sh
 #
-#Date:2021.12.09
+#Date:2024.05.27
 #Author:GZ
-#Mail:V2board@qq.com
 
 process()
 {
-install_date="V2board_install_$(date +%Y-%m-%d_%H:%M:%S).log"
+install_date="xboard_install_$(date +%Y-%m-%d_%H:%M:%S).log"
 printf "
 \033[36m#######################################################################
-#                     欢迎使用V2board一键部署脚本                     #
+#                     欢迎使用xboard一键部署脚本                     #
 #                脚本适配环境CentOS7+/RetHot7+、内存1G+               #
-#                更多信息请访问 https://gz1903.github.io              #
+#                                                                   #
 #######################################################################\033[0m
 "
 
@@ -72,8 +71,8 @@ echo -e "\033[36m###############################################################
 mysqladmin -u root password "$Database_Password"
 echo "---mysqladmin -u root password "$Database_Password""
 #修改数据库密码
-mysql -uroot -p$Database_Password -e "CREATE DATABASE v2board CHARACTER SET utf8 COLLATE utf8_general_ci;"
-echo $?="正在创建v2board数据库"
+mysql -uroot -p$Database_Password -e "CREATE DATABASE xboard CHARACTER SET utf8 COLLATE utf8_general_ci;"
+echo $?="正在创建xboard数据库"
 
 echo -e "\033[36m#######################################################################\033[0m"
 echo -e "\033[36m#                                                                     #\033[0m"
@@ -100,7 +99,7 @@ cp -i /etc/nginx/conf.d/default.conf{,.bak}
 cat > /etc/nginx/conf.d/default.conf <<"eof"
 server {
     listen       80;
-    root /usr/share/nginx/html/v2board/public;
+    root /usr/share/nginx/html/xboard/public;
     index index.html index.htm index.php;
 
     error_page   500 502 503 504  /50x.html;
@@ -111,16 +110,16 @@ server {
         try_files $uri $uri/ /index.php$is_args$query_string;
     }
     location = /50x.html {
-        root   /usr/share/nginx/html/v2board/public;
+        root   /usr/share/nginx/html/xboard/public;
     }
     #location = /404.html {
-    #    root   /usr/share/nginx/html/v2board/public;
+    #    root   /usr/share/nginx/html/xboard/public;
     #}
     location ~ \.php$ {
         root           html;
         fastcgi_pass   127.0.0.1:9000;
         fastcgi_index  index.php;
-        fastcgi_param  SCRIPT_FILENAME  /usr/share/nginx/html/v2board/public/$fastcgi_script_name;
+        fastcgi_param  SCRIPT_FILENAME  /usr/share/nginx/html/xboard/public/$fastcgi_script_name;
         include        fastcgi_params;
     }
     location /downloads {
@@ -170,7 +169,7 @@ http {
 }
 eon
 
-mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/v2board.conf
+mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/xboard.conf
 
 # 创建php测试文件
 touch /usr/share/nginx/html/phpinfo.php
@@ -182,20 +181,20 @@ eos
 
 echo -e "\033[36m#######################################################################\033[0m"
 echo -e "\033[36m#                                                                     #\033[0m"
-echo -e "\033[36m#                    正在部署V2board 请稍等~                          #\033[0m"
+echo -e "\033[36m#                    正在部署xboard 请稍等~                          #\033[0m"
 echo -e "\033[36m#                                                                     #\033[0m"
 echo -e "\033[36m#######################################################################\033[0m"
-rm -rf /usr/share/nginx/html/v2board
+rm -rf /usr/share/nginx/html/xboard
 cd /usr/share/nginx/html
-git clone https://github.com/wyx2685/v2board.git
-cd /usr/share/nginx/html/v2board
+git clone https://github.com/cedar2025/xboard.git
+cd /usr/share/nginx/html/xboard
 echo -e "\033[36m请输入y确认安装： \033[0m"
-sh /usr/share/nginx/html/v2board/init.sh
-git clone https://gitee.com/gz1903/v2board-theme-LuFly.git /usr/share/nginx/html/v2board/public/LuFly
-mv /usr/share/nginx/html/v2board/public/LuFly/* /usr/share/nginx/html/v2board/public/
-chmod -R 777 /usr/share/nginx/html/v2board
+sh /usr/share/nginx/html/xboard/init.sh
+git clone https://gitee.com/gz1903/xboard-theme-LuFly.git /usr/share/nginx/html/xboard/public/LuFly
+mv /usr/share/nginx/html/xboard/public/LuFly/* /usr/share/nginx/html/xboard/public/
+chmod -R 777 /usr/share/nginx/html/xboard
 # 添加定时任务
-echo "* * * * * root /usr/bin/php /usr/share/nginx/html/v2board/artisan schedule:run >/dev/null 2>/dev/null &" >> /etc/crontab
+echo "* * * * * root /usr/bin/php /usr/share/nginx/html/xboard/artisan schedule:run >/dev/null 2>/dev/null &" >> /etc/crontab
 # 安装Node.js
 curl -sL https://rpm.nodesource.com/setup_10.x | bash -
 yum -y install nodejs
@@ -205,7 +204,7 @@ node -v
 # 安装pm2
 npm install -g pm2
 # 添加守护队列
-pm2 start /usr/share/nginx/html/v2board/pm2.yaml --name v2board
+pm2 start /usr/share/nginx/html/xboard/pm2.yaml --name xboard
 # 保存现有列表数据，开机后会自动加载已保存的应用列表进行启动
 pm2 save
 # 设置开机启动
@@ -219,23 +218,23 @@ ips="$(curl ip.sb)"
 systemctl restart php-fpm mysqld redis && nginx
 echo $?="服务启动完成"
 # 清除缓存垃圾
-rm -rf /usr/local/src/v2board_install
+rm -rf /usr/local/src/xboard_install
 rm -rf /usr/local/src/lnmp_rpm
-rm -rf /usr/share/nginx/html/v2board/public/LuFly
+rm -rf /usr/share/nginx/html/xboard/public/LuFly
 
-# V2Board安装完成时间统计
+# xboard安装完成时间统计
 END_TIME=`date +%s`
 EXECUTING_TIME=`expr $END_TIME - $START_TIME`
 echo -e "\033[36m本次安装使用了$EXECUTING_TIME S!\033[0m"
 
 echo -e "\033[32m--------------------------- 安装已完成 ---------------------------\033[0m"
 echo -e "\033[32m##################################################################\033[0m"
-echo -e "\033[32m#                            V2board                             #\033[0m"
+echo -e "\033[32m#                            xboard                             #\033[0m"
 echo -e "\033[32m##################################################################\033[0m"
 echo -e "\033[32m 数据库用户名   :root\033[0m"
 echo -e "\033[32m 数据库密码     :"$Database_Password
-echo -e "\033[32m 网站目录       :/usr/share/nginx/html/v2board \033[0m"
-echo -e "\033[32m Nginx配置文件  :/etc/nginx/conf.d/v2board.conf \033[0m"
+echo -e "\033[32m 网站目录       :/usr/share/nginx/html/xboard \033[0m"
+echo -e "\033[32m Nginx配置文件  :/etc/nginx/conf.d/xboard.conf \033[0m"
 echo -e "\033[32m PHP配置目录    :/etc/php.ini \033[0m"
 echo -e "\033[32m 内网访问       :http://"$ip
 echo -e "\033[32m 外网访问       :http://"$ips
@@ -243,11 +242,11 @@ echo -e "\033[32m 安装日志文件   :/var/log/"$install_date
 echo -e "\033[32m------------------------------------------------------------------\033[0m"
 echo -e "\033[32m 如果安装有问题请反馈安装日志文件。\033[0m"
 echo -e "\033[32m 使用有问题请在这里寻求帮助:https://gz1903.github.io\033[0m"
-echo -e "\033[32m 电子邮箱:v2board@qq.com\033[0m"
+echo -e "\033[32m 电子邮箱:xboard@qq.com\033[0m"
 echo -e "\033[32m------------------------------------------------------------------\033[0m"
 
 }
-LOGFILE=/var/log/"V2board_install_$(date +%Y-%m-%d_%H:%M:%S).log"
+LOGFILE=/var/log/"xboard_install_$(date +%Y-%m-%d_%H:%M:%S).log"
 touch $LOGFILE
 tail -f $LOGFILE &
 pid=$!
